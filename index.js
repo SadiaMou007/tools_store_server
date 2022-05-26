@@ -43,6 +43,26 @@ async function run() {
     const bookingCollection = client.db("tools_store").collection("booking");
     const userCollection = client.db("tools_store").collection("user");
 
+    //make admin //modify:only admin can create new admin
+    app.put("/user/admin/:email", verifyJWT, async (req, res) => {
+      const email = req.params.email;
+
+      const requester = req.decoded.email;
+      const requesterAccount = await userCollection.findOne({
+        email: requester,
+      });
+      if (requesterAccount.role === "admin") {
+        const filter = { email: email };
+        const updateDoc = {
+          $set: { role: "admin" },
+        };
+        const result = await userCollection.updateOne(filter, updateDoc);
+        res.send(result);
+      } else {
+        res.status(403).send({ message: "forbidden" });
+      }
+    });
+
     //create/update user
     app.put("/user/:email", async (req, res) => {
       const email = req.params.email;
