@@ -111,19 +111,19 @@ async function run() {
     });
 
     //get all user
-    app.get("/user", async (req, res) => {
+    app.get("/user", verifyJWT, async (req, res) => {
       const users = await userCollection.find().toArray();
       res.send(users);
     });
     //get single user
-    app.get("/user/:email", async (req, res) => {
+    app.get("/user/:email", verifyJWT, async (req, res) => {
       const email = req.params.email;
       const user = await userCollection.findOne({ email: email });
       res.send(user);
     });
 
     //get all products
-    app.get("/products", async (req, res) => {
+    app.get("/products", verifyJWT, async (req, res) => {
       const query = {};
       const cursor = productCollection.find(query);
       const products = await cursor.toArray();
@@ -131,7 +131,7 @@ async function run() {
     });
 
     //get product using id
-    app.get("/products/:id", async (req, res) => {
+    app.get("/products/:id", verifyJWT, async (req, res) => {
       const id = req.params.id;
       const query = { _id: ObjectId(id) };
       const product = await productCollection.findOne(query);
@@ -140,7 +140,9 @@ async function run() {
     // add booking
     app.post("/booking", verifyJWT, async (req, res) => {
       const booking = req.body;
+      console.log(booking);
       const result = await bookingCollection.insertOne(booking);
+      console.log(result);
       res.send(result);
     });
   } finally {
