@@ -46,7 +46,6 @@ async function run() {
     //create/update user
     app.put("/user/:email", async (req, res) => {
       const email = req.params.email;
-
       const user = req.body;
       const filter = { email: email };
       const options = { upsert: true };
@@ -65,6 +64,12 @@ async function run() {
         }
       );
       res.send({ result, token });
+    });
+
+    //get all user
+    app.get("/user", async (req, res) => {
+      const users = await userCollection.find().toArray();
+      res.send(users);
     });
 
     //get all products
