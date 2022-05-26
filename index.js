@@ -99,6 +99,12 @@ async function run() {
       const users = await userCollection.find().toArray();
       res.send(users);
     });
+    //get single user
+    app.get("/user/:email",verifyJWT, async (req, res) => {
+      const email = req.params.email;
+      const user = await userCollection.findOne({ email: email });
+      res.send(user);
+    });
 
     //get all products
     app.get("/products", verifyJWT, async (req, res) => {
