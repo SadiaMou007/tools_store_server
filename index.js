@@ -9,6 +9,22 @@ const app = express();
 const port = process.env.PORT || 5000;
 
 app.use(cors());
+const corsConfig = {
+  origin: "*",
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE"],
+};
+app.use(cors(corsConfig));
+app.options("*", cors(corsConfig));
+app.use(express.json());
+app.use(function (req, res, next) {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept,authorization"
+  );
+  next();
+});
 app.use(express.json());
 
 /////
@@ -107,7 +123,7 @@ async function run() {
     });
 
     //get all products
-    app.get("/products", verifyJWT, async (req, res) => {
+    app.get("/products", async (req, res) => {
       const query = {};
       const cursor = productCollection.find(query);
       const products = await cursor.toArray();
@@ -115,7 +131,7 @@ async function run() {
     });
 
     //get product using id
-    app.get("/products/:id", verifyJWT, async (req, res) => {
+    app.get("/products/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: ObjectId(id) };
       const product = await productCollection.findOne(query);
