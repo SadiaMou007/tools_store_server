@@ -25,12 +25,28 @@ async function run() {
     await client.connect();
     //console.log("db connected");
     const productCollection = client.db("tools_store").collection("products");
+    const bookingCollection = client.db("tools_store").collection("booking");
 
+    //get all products
     app.get("/products", async (req, res) => {
       const query = {};
       const cursor = productCollection.find(query);
       const products = await cursor.toArray();
       res.send(products);
+    });
+
+    //get product using id
+    app.get("/products/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const product = await productCollection.findOne(query);
+      res.send(product);
+    });
+    // add booking
+    app.post("/booking", async (req, res) => {
+      const booking = req.body;
+      const result = await bookingCollection.insertOne(booking);
+      res.send(result);
     });
   } finally {
   }
