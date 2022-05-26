@@ -43,6 +43,14 @@ async function run() {
     const bookingCollection = client.db("tools_store").collection("booking");
     const userCollection = client.db("tools_store").collection("user");
 
+    //find admin
+    app.get("/admin/:email", async (req, res) => {
+      const email = req.params.email;
+      const user = await userCollection.findOne({ email: email });
+      const isAdmin = user.role === "admin";
+      res.send({ admin: isAdmin });
+    });
+
     //make admin //modify:only admin can create new admin
     app.put("/user/admin/:email", verifyJWT, async (req, res) => {
       const email = req.params.email;
