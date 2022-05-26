@@ -18,7 +18,22 @@ const client = new MongoClient(uri, {
   useUnifiedTopology: true,
   serverApi: ServerApiVersion.v1,
 });
-console.log(uri);
+//console.log(uri);
+//verify jwt token
+function verifyJWT(req, res, next) {
+  const authHeader = req.headers.authorization;
+  if (!authHeader) {
+    res.status(401).send({ message: "unauthorized" });
+  }
+  const token = authHeader.split(" ")[1];
+  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function (err, decoded) {
+    if (err) {
+      return res.status(403).send({ message: "forbidden" });
+    }
+    req.decoded = decoded;
+    next();
+  });
+}
 
 async function run() {
   try {
@@ -53,7 +68,7 @@ async function run() {
     });
 
     //get all products
-    app.get("/products", async (req, res) => {
+    app.get("/products", verifyJWT, async (req, res) => {
       const query = {};
       const cursor = productCollection.find(query);
       const products = await cursor.toArray();
@@ -61,14 +76,14 @@ async function run() {
     });
 
     //get product using id
-    app.get("/products/:id", async (req, res) => {
+    app.get("/products/:id", verifyJWT, async (req, res) => {
       const id = req.params.id;
       const query = { _id: ObjectId(id) };
       const product = await productCollection.findOne(query);
       res.send(product);
     });
     // add booking
-    app.post("/booking", async (req, res) => {
+    app.post("/booking", verifyJWT, async (req, res) => {
       const booking = req.body;
       const result = await bookingCollection.insertOne(booking);
       res.send(result);
