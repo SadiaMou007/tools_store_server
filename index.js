@@ -137,6 +137,18 @@ async function run() {
       const product = await productCollection.findOne(query);
       res.send(product);
     });
+    //get individual users booking
+    app.get("/booking", verifyJWT, async (req, res) => {
+      const user = req.query.user;
+      const decodedEmail = req.decoded.email;
+      if (user === decodedEmail) {
+        const query = { patient: patient }; //create object for make search query
+        const bookings = await bookingCollection.find(query).toArray();
+        res.send(bookings);
+      } else {
+        return res.status(403).send({ message: "forbidden access" });
+      }
+    });
     // add booking
     app.post("/booking", verifyJWT, async (req, res) => {
       const booking = req.body;
