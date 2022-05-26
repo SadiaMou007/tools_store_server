@@ -123,7 +123,7 @@ async function run() {
     });
 
     //get all products
-    app.get("/products", verifyJWT, async (req, res) => {
+    app.get("/products", async (req, res) => {
       const query = {};
       const cursor = productCollection.find(query);
       const products = await cursor.toArray();
