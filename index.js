@@ -49,6 +49,7 @@ async function run() {
     const productCollection = client.db("tools_store").collection("products");
     const bookingCollection = client.db("tools_store").collection("booking");
     const userCollection = client.db("tools_store").collection("user");
+    const reviewCollection = client.db("tools_store").collection("review");
 
     //get all products
     app.get("/products", async (req, res) => {
@@ -58,7 +59,7 @@ async function run() {
       res.send(products);
     });
     //create/update user
-    app.put("/user/:email", async (req, res) => {
+    app.put("/user/:email", verifyJWT, async (req, res) => {
       const email = req.params.email;
       const user = req.body;
       const filter = { email: email };
@@ -143,6 +144,20 @@ async function run() {
       const bookings = await bookingCollection.find(query).toArray();
       console.log(bookings);
       res.send(bookings);
+    });
+
+    // add review
+    app.post("/review", async (req, res) => {
+      const review = req.body;
+      const result = await reviewCollection.insertOne(review);
+      res.send(result);
+    });
+    //get all review
+    app.get("/review", async (req, res) => {
+      const query = {};
+      const cursor = reviewCollection.find(query);
+      const reviews = await cursor.toArray();
+      res.send(reviews);
     });
   } finally {
   }
