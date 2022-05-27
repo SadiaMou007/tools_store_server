@@ -50,34 +50,13 @@ async function run() {
     const bookingCollection = client.db("tools_store").collection("booking");
     const userCollection = client.db("tools_store").collection("user");
 
-    //find admin
-    app.get("/admin/:email", async (req, res) => {
-      const email = req.params.email;
-      const user = await userCollection.findOne({ email: email });
-      const isAdmin = user.role === "admin";
-      res.send({ admin: isAdmin });
+    //get all products
+    app.get("/products", async (req, res) => {
+      const query = {};
+      const cursor = productCollection.find(query);
+      const products = await cursor.toArray();
+      res.send(products);
     });
-
-    //make admin //modify:only admin can create new admin
-    app.put("/user/admin/:email", verifyJWT, async (req, res) => {
-      const email = req.params.email;
-
-      const requester = req.decoded.email;
-      const requesterAccount = await userCollection.findOne({
-        email: requester,
-      });
-      if (requesterAccount.role === "admin") {
-        const filter = { email: email };
-        const updateDoc = {
-          $set: { role: "admin" },
-        };
-        const result = await userCollection.updateOne(filter, updateDoc);
-        res.send(result);
-      } else {
-        res.status(403).send({ message: "forbidden" });
-      }
-    });
-
     //create/update user
     app.put("/user/:email", async (req, res) => {
       const email = req.params.email;
@@ -113,12 +92,31 @@ async function run() {
       res.send(user);
     });
 
-    //get all products
-    app.get("/products", async (req, res) => {
-      const query = {};
-      const cursor = productCollection.find(query);
-      const products = await cursor.toArray();
-      res.send(products);
+    //make admin //modify:only admin can create new admin
+    app.put("/user/admin/:email", verifyJWT, async (req, res) => {
+      const email = req.params.email;
+
+      const requester = req.decoded.email;
+      const requesterAccount = await userCollection.findOne({
+        email: requester,
+      });
+      if (requesterAccount.role === "admin") {
+        const filter = { email: email };
+        const updateDoc = {
+          $set: { role: "admin" },
+        };
+        const result = await userCollection.updateOne(filter, updateDoc);
+        res.send(result);
+      } else {
+        res.status(403).send({ message: "forbidden" });
+      }
+    });
+    //find admin
+    app.get("/admin/:email", async (req, res) => {
+      const email = req.params.email;
+      const user = await userCollection.findOne({ email: email });
+      const isAdmin = user.role === "admin";
+      res.send({ admin: isAdmin });
     });
 
     //get product using id
@@ -128,16 +126,7 @@ async function run() {
       const product = await productCollection.findOne(query);
       res.send(product);
     });
-    //get individual users booking
-    app.get("/booking", async (req, res) => {
-      const user = req.query.user;
-      const decodedEmail = req.decoded.email;
-      if (user === decodedEmail) {
-        const query = { user: user }; //create object for make search query
-        const bookings = await bookingCollection.find(query).toArray();
-        res.send(bookings);
-      }
-    });
+
     // add booking
     app.post("/booking", verifyJWT, async (req, res) => {
       const booking = req.body;
@@ -145,6 +134,15 @@ async function run() {
       const result = await bookingCollection.insertOne(booking);
       console.log(result);
       res.send(result);
+    });
+    //get individual users booking
+    app.get("/booking", async (req, res) => {
+      const user = req.query.user;
+      console.log(user);
+      const query = { userEmail: user };
+      const bookings = await bookingCollection.find(query).toArray();
+      console.log(bookings);
+      res.send(bookings);
     });
   } finally {
   }
