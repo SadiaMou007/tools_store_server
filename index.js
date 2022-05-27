@@ -6,25 +6,17 @@ const jwt = require("jsonwebtoken");
 
 require("dotenv").config();
 const app = express();
+app.use(cors());
 const port = process.env.PORT || 5000;
 
-app.use(cors());
-const corsConfig = {
-  origin: "*",
-  credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE"],
-};
-app.use(cors(corsConfig));
-app.options("*", cors(corsConfig));
-app.use(express.json());
-app.use(function (req, res, next) {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header(
-    "Access-Control-Allow-Headers",
-    "Origin, X-Requested-With, Content-Type, Accept,authorization"
-  );
-  next();
-});
+app.use(
+  cors({
+    origin: true,
+    optionsSuccessStatus: 200,
+    credentials: true,
+  })
+);
+
 app.use(express.json());
 
 /////
@@ -138,15 +130,13 @@ async function run() {
       res.send(product);
     });
     //get individual users booking
-    app.get("/booking", verifyJWT, async (req, res) => {
+    app.get("/booking", async (req, res) => {
       const user = req.query.user;
       const decodedEmail = req.decoded.email;
       if (user === decodedEmail) {
-        const query = { patient: patient }; //create object for make search query
+        const query = { user: user }; //create object for make search query
         const bookings = await bookingCollection.find(query).toArray();
         res.send(bookings);
-      } else {
-        return res.status(403).send({ message: "forbidden access" });
       }
     });
     // add booking
