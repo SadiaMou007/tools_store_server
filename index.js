@@ -61,6 +61,12 @@ async function run() {
       const products = await cursor.toArray();
       res.send(products);
     });
+    // add product
+    app.post("/product", verifyJWT, async (req, res) => {
+      const doctor = req.body;
+      const result = productCollection.insertOne(doctor);
+      res.send(result);
+    });
     //create/update user
     app.put("/user/:email", verifyJWT, async (req, res) => {
       const email = req.params.email;
