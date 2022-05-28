@@ -54,6 +54,19 @@ async function run() {
     const reviewCollection = client.db("tools_store").collection("review");
     const paymentCollection = client.db("tools_store").collection("payments");
 
+    //verify admin
+    const verifyAdmin = async (req, res, next) => {
+      const requester = req.decoded.email;
+      const requesterAccount = await userCollection.findOne({
+        email: requester,
+      });
+      if (requesterAccount.role === "admin") {
+        next();
+      } else {
+        res.status(403).send({ message: "forbidden" });
+      }
+    };
+
     //get all products
     app.get("/products", async (req, res) => {
       const query = {};
@@ -134,7 +147,7 @@ async function run() {
       }
     });
     //find admin
-    app.get("/admin/:email", async (req, res) => {
+    app.get("/admin/:email", verifyAdmin, async (req, res) => {
       const email = req.params.email;
       const user = await userCollection.findOne({ email: email });
       const isAdmin = user.role === "admin";
@@ -177,6 +190,14 @@ async function run() {
       const id = req.params.id;
       const query = { _id: ObjectId(id) };
       const booking = await bookingCollection.findOne(query);
+      res.send(booking);
+    });
+    //delete booking using id
+    app.delete("/booking/:id", verifyJWT, async (req, res) => {
+      const id = req.params.id;
+      console.log(id);
+      const query = { _id: ObjectId(id) };
+      const booking = await bookingCollection.deleteOne(query);
       res.send(booking);
     });
 
