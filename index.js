@@ -166,6 +166,11 @@ async function run() {
       console.log(bookings);
       res.send(bookings);
     });
+    //get all booking
+    app.get("/bookings", verifyJWT, async (req, res) => {
+      const booking = await bookingCollection.find().toArray();
+      res.send(booking);
+    });
 
     //load booking by id(step1: payment)
     app.get("/booking/:id", verifyJWT, async (req, res) => {
